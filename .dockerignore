@@ -1,0 +1,7 @@
+web/
+.git/
+.kiro/
+**/__pycache__/
+**/.pytest_cache/
+**/.ruff_cache/
+.env*

@@ -1,0 +1,55 @@
+{
+  "_note": "Canonical seed data. Edit THIS file, then run `python simulator/build_fixtures.py` to regenerate fixtures/zones.geojson and supabase/seed.sql. Coordinates are approximate and rates/hours marked verify:true are placeholders - check bethpark.org and parking.lehigh.edu.",
+  "operators": [
+    { "id": 1, "name": "Bethlehem Parking Authority", "pay_app": "ParkMobile" },
+    { "id": 2, "name": "Lehigh University Parking Services", "pay_app": "Passport" }
+  ],
+  "facilities": [
+    { "id": 1, "operator_id": 1, "name": "Polk Street Garage", "type": "garage", "lat": 40.6131, "lng": -75.3735 },
+    { "id": 2, "operator_id": 1, "name": "New Street Garage", "type": "garage", "lat": 40.6125, "lng": -75.3790 },
+    { "id": 3, "operator_id": 1, "name": "E 3rd St Meters", "type": "street", "lat": 40.6136, "lng": -75.3762 },
+    { "id": 4, "operator_id": 1, "name": "E 4th St Meters", "type": "street", "lat": 40.6116, "lng": -75.3770 },
+    { "id": 5, "operator_id": 2, "name": "Zoellner Garage", "type": "garage", "lat": 40.6077, "lng": -75.3741 },
+    { "id": 6, "operator_id": 2, "name": "Alumni Parking Pavilion", "type": "garage", "lat": 40.6054, "lng": -75.3812 },
+    { "id": 7, "operator_id": 2, "name": "Farrington Square Garage", "type": "garage", "lat": 40.6086, "lng": -75.3814 },
+    { "id": 8, "operator_id": 1, "name": "Packer Ave Meters", "type": "street", "lat": 40.6074, "lng": -75.3768 },
+    { "id": 9, "operator_id": 2, "name": "Morton St Meters", "type": "street", "lat": 40.6082, "lng": -75.3831 },
+    { "id": 10, "operator_id": 2, "name": "Goodman Stadium Lots", "type": "lot", "lat": 40.5925, "lng": -75.3975 }
+  ],
+  "zones": [
+    { "id": 1,  "facility_id": 1,  "name": "Polk St Garage (transient)", "capacity": 731, "visitor_allowed": true,  "demand": 0.50, "profile": "evening" },
+    { "id": 2,  "facility_id": 2,  "name": "New St Garage (transient)",  "capacity": 626, "visitor_allowed": true,  "demand": 0.60, "profile": "daytime" },
+    { "id": 3,  "facility_id": 3,  "name": "3rd St Premier",             "capacity": 40,  "visitor_allowed": true,  "demand": 0.97, "profile": "commercial" },
+    { "id": 4,  "facility_id": 3,  "name": "3rd St Park Once",           "capacity": 30,  "visitor_allowed": true,  "demand": 0.85, "profile": "commercial" },
+    { "id": 5,  "facility_id": 4,  "name": "4th St Meters",              "capacity": 40,  "visitor_allowed": true,  "demand": 0.80, "profile": "commercial" },
+    { "id": 6,  "facility_id": 5,  "name": "Zoellner L1 (visitor)",      "capacity": 60,  "visitor_allowed": true,  "demand": 0.80, "profile": "campus" },
+    { "id": 7,  "facility_id": 5,  "name": "Zoellner L2-4 (permit)",     "capacity": 300, "visitor_allowed": false, "demand": 0.75, "profile": "campus" },
+    { "id": 8,  "facility_id": 6,  "name": "Alumni L1 (visitor)",        "capacity": 50,  "visitor_allowed": true,  "demand": 0.75, "profile": "campus" },
+    { "id": 9,  "facility_id": 7,  "name": "Farrington L1-2 (Text2Park)", "capacity": 150, "visitor_allowed": true, "demand": 0.60, "profile": "evening" },
+    { "id": 10, "facility_id": 8,  "name": "Packer Ave Meters",          "capacity": 25,  "visitor_allowed": true,  "demand": 0.90, "profile": "campus" },
+    { "id": 11, "facility_id": 9,  "name": "Morton St Meters",           "capacity": 20,  "visitor_allowed": true,  "demand": 0.35, "profile": "campus" },
+    { "id": 12, "facility_id": 10, "name": "Goodman Stadium Lots",       "capacity": 800, "visitor_allowed": true,  "demand": 0.08, "profile": "event_only" }
+  ],
+  "rate_templates": {
+    "_note": "days: 0=Sunday ... 6=Saturday. time_limit_min null = no limit.",
+    "1":  [{ "days": [0,1,2,3,4,5,6], "start": "00:00", "end": "23:59", "rate": 1.00, "limit": null }],
+    "2":  [{ "days": [0,1,2,3,4,5,6], "start": "00:00", "end": "23:59", "rate": 1.00, "limit": null }],
+    "3":  [{ "days": [1,2,3,4,5,6],   "start": "08:00", "end": "20:00", "rate": 2.50, "limit": 180, "verify": true }],
+    "4":  [{ "days": [1,2,3,4,5,6],   "start": "08:00", "end": "20:00", "rate": 1.50, "limit": null }],
+    "5":  [{ "days": [1,2,3,4,5,6],   "start": "08:00", "end": "20:00", "rate": 1.50, "limit": 180, "verify": true }],
+    "6":  [{ "days": [0,1,2,3,4,5,6], "start": "06:00", "end": "23:00", "rate": 1.00, "limit": null }],
+    "7":  [{ "days": [1,2,3,4,5],     "start": "06:00", "end": "23:59", "rate": 0.00, "limit": null, "_note": "permit only" }],
+    "8":  [{ "days": [0,1,2,3,4,5,6], "start": "06:00", "end": "23:59", "rate": 1.00, "limit": 300, "verify": true }],
+    "9":  [{ "days": [1,2,3,4,5],     "start": "16:00", "end": "23:59", "rate": 1.00, "limit": null, "verify": true },
+           { "days": [0,6],           "start": "00:00", "end": "23:59", "rate": 1.00, "limit": null, "verify": true }],
+    "10": [{ "days": [0,1,2,3,4,5,6], "start": "06:00", "end": "23:59", "rate": 1.50, "limit": 120, "verify": true }],
+    "11": [{ "days": [0,1,2,3,4,5,6], "start": "06:00", "end": "23:59", "rate": 0.75, "limit": 120, "verify": true }],
+    "12": [{ "days": [0,6],           "start": "08:00", "end": "23:00", "rate": 0.00, "limit": null, "verify": true }]
+  },
+  "destinations": [
+    { "id": 1, "name": "Zoellner Arts Center",   "lat": 40.6077, "lng": -75.3735 },
+    { "id": 2, "name": "Goodman Stadium",        "lat": 40.5938, "lng": -75.3953 },
+    { "id": 3, "name": "Alumni Memorial Building", "lat": 40.6068, "lng": -75.3782 },
+    { "id": 4, "name": "3rd St Shops & SteelStacks", "lat": 40.6150, "lng": -75.3700 }
+  ]
+}
