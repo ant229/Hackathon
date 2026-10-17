@@ -1,0 +1,46 @@
+{
+  "_note": "API CONTRACT. These are the exact response shapes. The API returns these in stub mode (no SUPABASE_URL set), and the frontend can import them directly. Change shapes only with the whole team.",
+  "zone_status": [
+    { "zone_id": 1,  "occupied": 402, "opening_soon": 11, "updated_at": "2026-10-17T18:00:00Z" },
+    { "zone_id": 2,  "occupied": 371, "opening_soon": 9,  "updated_at": "2026-10-17T18:00:00Z" },
+    { "zone_id": 3,  "occupied": 39,  "opening_soon": 3,  "updated_at": "2026-10-17T18:00:00Z" },
+    { "zone_id": 4,  "occupied": 27,  "opening_soon": 1,  "updated_at": "2026-10-17T18:00:00Z" },
+    { "zone_id": 5,  "occupied": 31,  "opening_soon": 2,  "updated_at": "2026-10-17T18:00:00Z" },
+    { "zone_id": 6,  "occupied": 51,  "opening_soon": 4,  "updated_at": "2026-10-17T18:00:00Z" },
+    { "zone_id": 7,  "occupied": 214, "opening_soon": 0,  "updated_at": "2026-10-17T18:00:00Z" },
+    { "zone_id": 8,  "occupied": 38,  "opening_soon": 2,  "updated_at": "2026-10-17T18:00:00Z" },
+    { "zone_id": 9,  "occupied": 96,  "opening_soon": 5,  "updated_at": "2026-10-17T18:00:00Z" },
+    { "zone_id": 10, "occupied": 24,  "opening_soon": 1,  "updated_at": "2026-10-17T18:00:00Z" },
+    { "zone_id": 11, "occupied": 6,   "opening_soon": 0,  "updated_at": "2026-10-17T18:00:00Z" },
+    { "zone_id": 12, "occupied": 40,  "opening_soon": 0,  "updated_at": "2026-10-17T18:00:00Z" }
+  ],
+  "predict": {
+    "zone_id": 3,
+    "at": "2026-10-17T22:00:00Z",
+    "expected_occupancy": 0.94,
+    "prob_available": 0.06,
+    "expected_open": 2
+  },
+  "opening_soon": {
+    "near": { "lat": 40.6077, "lng": -75.3735 },
+    "within_minutes": 15,
+    "zones": [
+      { "zone_id": 6, "name": "Zoellner L1 (visitor)", "opening_soon": 4, "walk_minutes": 1, "pay_app": "Passport" },
+      { "zone_id": 1, "name": "Polk St Garage (transient)", "opening_soon": 11, "walk_minutes": 9, "pay_app": "ParkMobile" }
+    ]
+  },
+  "recommend": {
+    "destination": { "destination_id": 1, "name": "Zoellner Arts Center" },
+    "arrival": "2026-10-17T23:00:00Z",
+    "options": [
+      { "rank": 1, "zone_id": 6, "name": "Zoellner L1 (visitor)", "prob_available": 0.41, "expected_open": 24, "hourly_rate": 1.0, "time_limit_min": null, "walk_minutes": 1, "pay_app": "Passport", "score": 0.82 },
+      { "rank": 2, "zone_id": 1, "name": "Polk St Garage (transient)", "prob_available": 0.88, "expected_open": 643, "hourly_rate": 1.0, "time_limit_min": null, "walk_minutes": 9, "pay_app": "ParkMobile", "score": 0.77 },
+      { "rank": 3, "zone_id": 10, "name": "Packer Ave Meters", "prob_available": 0.18, "expected_open": 4, "hourly_rate": 1.5, "time_limit_min": 120, "walk_minutes": 3, "pay_app": "ParkMobile", "score": 0.51 }
+    ]
+  },
+  "demo_scenario": {
+    "scenario": "game_day",
+    "event_id": 1,
+    "message": "Game day started: demand boosted near Goodman Stadium for 3 hours."
+  }
+}
