@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  PROJECT CONTEXT FILE — shared across all AI tools on this project
+  (Kiro, GitHub Copilot, Claude, etc.)
+
+  How to read this file:
+  1. <current_state> is the source of truth. If anything in <chat_history>
+     conflicts with it, <current_state> wins.
+  2. <chat_history> is the full conversation that produced these decisions,
+     in order. Items marked status="superseded" were replaced later.
+-->
+<project_context version="1.0" exported="2026-10-17" timezone="America/New_York">
+
+  <project>
+    <name>South Bethlehem / Lehigh Parking Monitor</name>
+    <type>Hackathon project (24 hours, software only, team of 3)</type>
+    <one_liner>
+      A web app that shows where, when, and for how long parking spots are available
+      around South Bethlehem and Lehigh University, using payment-session data
+      (pay-by-hour sessions with per-zone time limits) as the occupancy signal.
+    </one_liner>
+  </project>
+
+  <!-- ============================================================ -->
+  <!-- CURRENT STATE: SOURCE OF TRUTH                                -->
+  <!-- ============================================================ -->
+  <current_state>
+
+    <requirements>
+      <coverage>All parking types: Lehigh lots/garages, City of Bethlehem street meters, public/private garages.</coverage>
+      <detection>
+        No hardware. Availability is estimated from pay-by-hour payment sessions.
+        Each session has a zone, start time, and paid-until time; zones have time limits.
+        Real session data is not publicly available, so the hackathon uses SYNTHETIC data
+        calibrated to real rules (rates, limits, hours) and real demand patterns.
+      </detection>
+      <primary_users>Students and parents visiting Lehigh.</primary_users>
+      <analytics>
+        <item>Occupancy heatmaps (by hour and day of week)</item>
+        <item>Availability prediction (chance of finding a spot at a given time and place)</item>
+        <item>Dwell time and turnover</item>
+        <item>Event and class-change impact</item>
+      </analytics>
+      <constraints>24 hours, software only, team of 3.</constraints>
+    </requirements>
+
+    <domain_facts>
+      <fact>Two operators with different payment apps: Bethlehem Parking Authority (BPA) uses ParkMobile; Lehigh Parking Services uses Passport Parking (also Text2Park at Farrington Square after 4 PM and on weekends).</fact>
+      <fact>BPA runs a two-tier "ParkBethlehem" meter system on the South Side (2nd/3rd/4th St areas): time-limited premier spots, and "Park Once" spots at $1.50/hr with no time limit. Verify current premier rates on bethpark.org.</fact>
+      <fact>South Side BPA garages: Polk Street Garage (731 spaces, off E 3rd St, has real-time occupancy monitoring) and New Street Garage (324 S New St, about $1/hr, cashless).</fact>
+      <fact>Lehigh visitor parking: Zoellner garage Level 1 is pay-by-plate at about $1/hr, metered until 11 PM, 7 days a week; Levels 2-4 are permit-only unless event signage says otherwise. Alumni garage Level 1 is metered. Packer Ave has street meters.</fact>
+      <fact>Visitors of Lehigh students need the registered student to obtain a Daily Visitor Pass.</fact>
+      <fact>Lehigh runs event shuttles when an event exceeds about 1,050 expected attendees at Zoellner.</fact>
+      <fact>Calibration pattern from BPA: Main St and 3rd St (South Side) have chronic low turnover and shortage complaints; Morton Ave (South Side) consistently shows low occupancy.</fact>
+      <fact>Payment sessions are an imperfect proxy: coin/kiosk payers are invisible to app data, people leave early or overstay, and permit/placard parkers are not recorded. Use a per-zone correction factor and show confidence.</fact>
+    </domain_facts>
+
+    <key_features>
+      <feature>Live map with zones colored by estimated occupancy.</feature>
+      <feature>"Opening soon": sessions expiring in the next 10-15 minutes in time-limited zones.</feature>
+      <feature>"Plan a visit": pick a destination (Zoellner, Goodman Stadium, Alumni Memorial, 3rd St shops) and an arrival time; get ranked parking options with price, walk time, and which app to pay with.</feature>
+      <feature>Insights page: heatmap by hour x day, dwell/turnover charts.</feature>
+      <feature>Demo control panel: buttons that spike simulated demand (game day, Family Weekend).</feature>
+      <feature>Privacy: no license plates stored; aggregates only.</feature>
+    </key_features>
+
+    <tech_stack>
+      <frontend>Next.js (App Router, TypeScript), shadcn/ui, Recharts, Leaflet loaded client-only. Deployed on Vercel.</frontend>
+      <backend>FastAPI (Python) deployed on Fly.io. Region ewr or iad. min_machines_running = 1 to avoid cold starts. Runs two processes: the API and the simulator worker.</backend>
+      <database>Supabase (Postgres + PostGIS). Materialized views refreshed with pg_cron for analytics. Realtime enabled on Zone_Status. Row-level security on, public read-only; only FastAPI writes, using the service key kept in Fly secrets. Region us-east-1.</database>
+      <ai_tooling>Kiro (steering files, one spec per workstream, hooks, Supabase MCP server). This file is shared context for all AI tools.</ai_tooling>
+      <principle>Let Postgres do the analytics, keep FastAPI thin, keep the frontend simple.</principle>
+      <prediction_model>Start with average occupancy for each hour of the week multiplied by an event factor, computed in SQL. Add scikit-learn only if time remains after hour 16.</prediction_model>
+    </tech_stack>
+
+    <schema status="current" name="medium">
+      <table name="Operator">
+        <column name="Operator_ID" key="PK"/>
+        <column name="Name"/>
+        <column name="Pay_App" note="BPA = ParkMobile, Lehigh = Passport"/>
+      </table>
+      <table name="Facility">
+        <column name="Facility_ID" key="PK"/>
+        <column name="Operator_ID" key="FK" references="Operator"/>
+        <column name="Name"/>
+        <column name="Type" note="garage | lot | street"/>
+        <column name="Lat"/>
+        <column name="Lng"/>
+      </table>
+      <table name="Zone">
+        <column name="Zone_ID" key="PK"/>
+        <column name="Facility_ID" key="FK" references="Facility"/>
+        <column name="Name"/>
+        <column name="Capacity"/>
+        <column name="Visitor_Allowed" type="boolean"/>
+      </table>
+      <table name="Rate_Rule">
+        <column name="Rule_ID" key="PK"/>
+        <column name="Zone_ID" key="FK" references="Zone"/>
+        <column name="Day_Of_Week"/>
+        <column name="Start_Time"/>
+        <column name="End_Time"/>
+        <column name="Hourly_Rate"/>
+        <column name="Time_Limit_Min"/>
+      </table>
+      <table name="Session">
+        <column name="Session_ID" key="PK"/>
+        <column name="Zone_ID" key="FK" references="Zone"/>
+        <column name="Start_Time"/>
+        <column name="Paid_Until"/>
+        <column name="End_Time"/>
+      </table>
+      <table name="Destination">
+        <column name="Destination_ID" key="PK"/>
+        <column name="Name"/>
+        <column name="Lat"/>
+        <column name="Lng"/>
+      </table>
+      <table name="Event">
+        <column name="Event_ID" key="PK"/>
+        <column name="Destination_ID" key="FK" references="Destination"/>
+        <column name="Name"/>
+        <column name="Start_Time"/>
+        <column name="End_Time"/>
+        <column name="Expected_Attendance"/>
+      </table>
+      <table name="Impacts" note="associative M:N between Event and Zone">
+        <column name="Event_ID" key="PK,FK" references="Event"/>
+        <column name="Zone_ID" key="PK,FK" references="Zone"/>
+        <column name="Demand_Boost"/>
+      </table>
+      <table name="Zone_Status" note="live table; Supabase Realtime subscribes to this">
+        <column name="Zone_ID" key="PK,FK" references="Zone"/>
+        <column name="Occupied"/>
+        <column name="Opening_Soon"/>
+        <column name="Updated_At"/>
+      </table>
+      <relationships>
+        <rel from="Operator" to="Facility" cardinality="1:N"/>
+        <rel from="Facility" to="Zone" cardinality="1:N"/>
+        <rel from="Zone" to="Rate_Rule" cardinality="1:N"/>
+        <rel from="Zone" to="Session" cardinality="1:N"/>
+        <rel from="Destination" to="Event" cardinality="1:N"/>
+        <rel from="Event" to="Zone" via="Impacts" cardinality="M:N"/>
+        <rel from="Zone" to="Zone_Status" cardinality="1:1"/>
+      </relationships>
+      <notes>Walk distance between a Destination and a Zone is calculated from lat/lng (PostGIS), not stored.</notes>
+    </schema>
+
+    <api_endpoints owner="Teammate A">
+      <endpoint path="/predict?zone&amp;time">Probability of availability for a zone at a time.</endpoint>
+      <endpoint path="/opening-soon?near=lat,lng">Sessions expiring within about 15 minutes near a point.</endpoint>
+      <endpoint path="/recommend?destination&amp;arrival">Ranked top zones by predicted availability, price, and walk distance.</endpoint>
+      <endpoint path="/demo/scenario">Tells the simulator to spike demand for the demo.</endpoint>
+      <note>Heatmap and live status are read by the frontend directly from Supabase.</note>
+    </api_endpoints>
+
+    <team_plan>
+      <role person="Andrew (you)" lane="Data core and integration">Owns /supabase (migrations), /simulator, /fixtures, and the pitch. Merge captain for main.</role>
+      <role person="Teammate A" lane="Backend and analytics">Owns /api, the Fly deploy, and prediction logic.</role>
+      <role person="Teammate B" lane="Frontend and experience">Owns /web, the Vercel deploy, and all UI. Builds against fixtures and API stubs first.</role>
+      <first_90_minutes>Together, fix three contracts before splitting: (1) DB schema, (2) API contract as stub routes with example JSON, (3) mock data in /fixtures. Commit to main, then branch.</first_90_minutes>
+      <timeline>
+        <block hours="0-2">Steering files, schema review, Supabase project, MCP connected, contracts committed.</block>
+        <block hours="2-6">Schema + zones; API skeleton deployed to Fly; Next.js scaffold on Vercel with the map rendering zones.</block>
+        <block hours="6-12">Materialized views + pg_cron; real endpoints; live map wired to Realtime.</block>
+        <block hours="12-18">Simulator tuning; event multipliers; Plan-a-visit and Insights screens; demo control panel.</block>
+        <block hours="18-22">Bug fixes, polish, mobile layout, slides, recorded backup demo.</block>
+        <block hours="22-24">Feature freeze. Rehearse twice.</block>
+      </timeline>
+      <rules>No new features after hour 18. A working deploy at every milestone. Keep a recorded backup demo video. Sync every 4 hours (hours 6, 10, 14, 18).</rules>
+    </team_plan>
+
+    <repo_and_github>
+      <layout>
+        .kiro/ (steering + specs, committed)
+        .github/workflows/
+        api/ (Teammate A)
+        web/ (Teammate B)
+        supabase/migrations/ (Andrew; schema changes only here)
+        simulator/ (Andrew)
+        fixtures/ (shared contracts; announce any change)
+        .env.example (variable names only)
+      </layout>
+      <workflow>
+        main is always deployable; no direct pushes. Short-lived branches named by lane
+        (api/..., web/..., data/...). Open a PR every 1-3 hours. Squash merge. Pull main
+        before opening a PR. CI must pass; reviews not required, but tag the team on any PR
+        touching fixtures/ or supabase/migrations/.
+      </workflow>
+      <automation>
+        GitHub Actions on PRs with path filters: web = tsc + ESLint; api = ruff + pytest.
+        Vercel preview URL per PR. Fly deploy via flyctl on merge to main (FLY_API_TOKEN in repo secrets).
+        Schema changes as SQL migrations applied with the Supabase CLI, never edited in the dashboard.
+      </automation>
+      <tracking>Kiro tasks.md items become GitHub Issues labeled api/web/data; one GitHub Projects board; "Closes #N" in PRs.</tracking>
+      <secrets>Real keys only in Vercel env, Fly secrets, and GitHub Actions secrets. .env* in .gitignore. Supabase anon key may reach the browser; the service key never leaves Fly.</secrets>
+      <releases>Tag v0.1-mvp around hour 12 and v1.0-demo at feature freeze, for rollback.</releases>
+    </repo_and_github>
+
+    <kiro_setup>
+      <steering>
+        .kiro/steering/product.md (users, analytics, demo scenario);
+        tech.md (stack and conventions: Next.js App Router + TS, FastAPI + Pydantic, Supabase, no auth, Leaflet);
+        structure.md (monorepo layout, table names, API routes, naming rules).
+      </steering>
+      <specs>data-model, analytics-api, map-ui, optional event-mode. Review data-model together first; the others depend on it.</specs>
+      <hooks>Schema SQL changes regenerate Supabase TS types and Pydantic models; FastAPI router changes regenerate the typed API client; run related tests or type checks on save.</hooks>
+      <mcp>Supabase MCP server; a docs server (e.g. Context7) for current Next.js and Supabase docs.</mcp>
+      <caution>Use spec mode only for the 3-4 big features; use chat for small tweaks.</caution>
+    </kiro_setup>
+  </current_state>
+
+  <!-- ============================================================ -->
+  <!-- FULL CHAT HISTORY                                             -->
+  <!-- ============================================================ -->
+  <chat_history>
+
+    <turn n="1" role="user"><![CDATA[
+give an analysis on the parking spot monitoring in south bethlehem and lehigh university. in the context of developing a hackathon project that monitors and gives analytics for people to see where, for how long, and when parking spots become available in the area. first, ask 5 pertinent questions before developing any response
+    ]]></turn>
+
+    <turn n="2" role="assistant"><![CDATA[
+Asked five clarifying questions:
+1. Which parking to cover (Lehigh lots/garages, city street meters, private lots, or all)?
+2. How will availability be detected (camera/CV, IoT sensors, crowdsourcing, existing/simulated data)?
+3. Who is the primary user (permit students, commuters/visitors, event-goers, admins)?
+4. What are the hackathon constraints (length, team size, hardware, judging criteria)?
+5. What analytics should be shown (heatmaps, prediction, dwell/turnover, event impact; web/mobile/dashboard)?
+    ]]></turn>
+
+    <turn n="3" role="user"><![CDATA[
+why arent you doing hte thing where i select the answer for you
+    ]]></turn>
+
+    <turn n="4" role="assistant" note="Questions re-asked as multiple choice; user answers recorded"><![CDATA[
+Answers:
+- Coverage: All of the above.
+- Detection: "the street parking currently tracks parking is on a pay-by-hour basis. people that park there have a set time limit. per zone"
+- Primary user: "students and parents visiting, that will be the primary usecase"
+- Analytics: Availability prediction, Dwell time & turnover, Event/class-time impact, Occupancy heatmaps.
+- Constraints: 24h, software only.
+    ]]></turn>
+
+    <turn n="5" role="assistant" topic="Parking landscape analysis"><![CDATA[
+1. LANDSCAPE
+City (BPA): runs meters + ParkMobile, permit programs, and garages. ParkBethlehem two-tier
+meters cover the South Side's 2nd/3rd/4th street areas: premier spots with time limits, and
+"Park Once" at $1.50/hr with no limit. Polk Street Garage (731 spaces, off E 3rd St, real-time
+occupancy monitoring); New Street Garage (324 S New St, $1/hr, cashless). BPA reports chronic
+shortage/low turnover on Main St and 3rd St (South Side), and low occupancy on Morton Ave.
+
+Lehigh: uses PassportParking, a different app from the city's. Visitor options: pay-by-plate
+spaces, Zoellner garage L1 (kiosk or app, metered until 11 PM, 7 days; L2-4 permit-only),
+Text-to-Park at Farrington Square levels 1-2 after 4 PM and on weekends. Visitors of students
+need the student to obtain a Daily Visitor Pass. Event shuttles when Zoellner events exceed
+about 1,050 attendees.
+
+2. CORE INSIGHT: payment sessions as a sensor
+Each session = zone + start + paid-until. Estimated occupancy = active sessions / capacity.
+Dwell = session length vs. limit. Turnover = new sessions per spot per hour. Key feature:
+"opening soon" = sessions expiring in the next 10-15 minutes. Gaps: coin payers, early
+departures, overstays, permit/placard parkers. Use a correction factor and confidence band.
+No public APIs exist; use synthetic data calibrated to real rules, and pitch a BPA/Lehigh
+partnership as the next step.
+
+3. ANALYTICS MAPPING
+Heatmap (sessions/capacity per 15-min slot); prediction (average occupancy per hour of week x
+event factor); dwell & turnover; event/class-time impact using an event calendar.
+
+4. 24H BUILD
+Python synthetic generator, a database, FastAPI, map front end. Demo: "parent visiting for
+Saturday's game." Pitch: less circling for spots, helps merchants, privacy-safe, one view
+across two operators and two apps.
+    ]]></turn>
+
+    <turn n="6" role="user"><![CDATA[
+we have access to kiro. in what ways can we optimize and use tools like next.js for the front end, fly.io or fastAPI for backend, and supabase for database? give suggestions and plan
+    ]]></turn>
+
+    <turn n="7" role="assistant" topic="Stack and Kiro plan"><![CDATA[
+FastAPI and Fly.io are not either/or: FastAPI is the framework, Fly.io hosts it. Stack:
+Next.js on Vercel; FastAPI on Fly.io (simulator, prediction, recommendation); Supabase with
+PostGIS, pg_cron materialized views, and Realtime; Kiro as shared brain.
+Principle: let Postgres do the analytics, keep FastAPI thin, keep the front end simple.
+
+Kiro: steering files (product.md, tech.md, structure.md) at hour 0; one spec per workstream
+(data-model, analytics-api, map-ui, optional event-mode); hooks (regenerate types and API
+client, run tests); MCP (Supabase server, docs server). Use spec mode only for big features.
+
+Supabase: PostGIS zones; materialized views + pg_cron; Realtime on zone status; RLS public
+read-only, FastAPI writes with service key.
+
+FastAPI on Fly: API + simulator worker; endpoints /predict, /opening-soon, /recommend;
+region ewr/iad; min_machines_running = 1; secrets in Fly.
+
+Next.js: Leaflet client-only; screens = Live map, Plan a visit, Insights; shadcn/ui +
+Recharts; demo control panel route.
+
+24h plan by hour blocks (see current_state/team_plan). Hard rules: no new features after
+hour 18, a working deploy at each milestone, recorded backup video.
+    ]]></turn>
+
+    <turn n="8" role="user"><![CDATA[
+develop a plan for the 2 other teammates to work on something separately. also explain how to use github effectively with this project
+    ]]></turn>
+
+    <turn n="9" role="assistant" topic="Team split and GitHub workflow"><![CDATA[
+Team of 3. Andrew owns the data core; Teammate A owns backend/analytics; Teammate B owns
+frontend. To work independently, spend the first 60-90 minutes fixing three contracts:
+DB schema, API contract (stub routes with example JSON), and mock data in /fixtures.
+
+Teammate A timeline: 2-5 skeleton + stubs on Fly; 5-10 /predict and /opening-soon; 10-15
+/recommend with PostGIS; 15-18 /demo/scenario; 18-22 tests, caching, load check.
+Teammate B timeline: 2-5 scaffold + Vercel + map from fixtures; 5-10 live map on mocks;
+10-14 Plan a visit against stubs; 14-18 Insights + swap to live API/Realtime; 18-22
+mobile layout, demo panel, polish.
+Andrew: 2-8 PostGIS zones, simulator, views + pg_cron; 8-14 Realtime, help integrate;
+14-22 event scenarios, end-to-end testing, slides, backup demo; merge captain.
+
+GitHub: monorepo with folder ownership; main always deployable; short lane-named branches;
+PRs every 1-3 hours; squash merge; pull main before PR; CI required, reviews not required;
+Actions with path filters; Vercel previews; Fly deploy on merge; Supabase CLI migrations;
+Issues from Kiro tasks + Projects board; secrets never committed; tags v0.1-mvp and
+v1.0-demo; syncs at hours 6, 10, 14, 18.
+    ]]></turn>
+
+    <turn n="10" role="user" note="User attached an example ER diagram image"><![CDATA[
+here is a schema example. brainstorm schema relationships for this project
+
+[Attached image: an apartment-rental relational schema diagram used as a style example.
+Tables: Person(Person_ID, Name), Person_Phone(Person_ID, phone_number), Person_email
+(Person_ID, email_address), Tenant(Person_ID), Prospective Tenant(Person_ID,
+Employment_Status, Credit_Score, Income), Manager(Person_ID, Property_ID), Lease(Lease_ID,
+Security_Deposit, Start_Date, Rent, Apartment_ID), Signs(Person_ID, Lease_ID), Payment
+Method(Method_ID, Person_ID), Cash(Method_ID), Credit(Method_ID, Provider, Number, Exp_Date),
+Debit(Method_ID, Provider, Number, Exp_Date), Apartment(Apartment_ID, Size, Bedrooms,
+Bathrooms, Capacity, Monthly_Rate, Property_ID), Property(Property_ID, City, Street,
+Zip Code), Visits(Person_ID, Apartment_ID, Visit_Date), Charge(Charge_ID, Name, Amount),
+Uses(Charge_ID, Lease_ID), Private Amenity(Charge_ID, Apartment_ID), Common
+Amenity(Amenity_ID, Property_ID). Patterns: supertype/subtype, multivalued attribute
+tables, associative M:N tables, PKs underlined, FK arrows.]
+    ]]></turn>
+
+    <turn n="11" role="assistant" topic="Schema brainstorm" status="superseded" superseded_by="turn 15"><![CDATA[
+Full brainstorm (~20 tables) using the same patterns: Operator, Payment_App, Accepts (M:N),
+Facility supertype with Garage/Street_Block/Lot subtypes, Zone, Rate_Rule, Permit_Type,
+Valid_In (M:N), Session, Session_Extension, Destination, Near (M:N with Walk_Minutes),
+Event, Impacts (M:N), Occupancy_Snapshot, Prediction, Zone_Status. No license plates
+stored. Design decisions: track by zone, not by space; time-based rate rules; keep raw
+sessions plus precomputed snapshots.
+    ]]></turn>
+
+    <turn n="12" role="user"><![CDATA[
+simplify. it is not the sistine chapel
+    ]]></turn>
+
+    <turn n="13" role="assistant" topic="Schema minimal" status="superseded" superseded_by="turn 15"><![CDATA[
+Five tables: Zone (with operator, type, capacity, rate, limit, pay app, lat/lng), Session,
+Destination, Event (with Demand_Boost), Zone_Status. Zone 1:N Session; Destination 1:N
+Event; Zone 1:1 Zone_Status. Walk distance calculated from lat/lng.
+    ]]></turn>
+
+    <turn n="14" role="user"><![CDATA[
+not that simple. medium between the two
+    ]]></turn>
+
+    <turn n="15" role="assistant" topic="Schema medium" status="current"><![CDATA[
+Nine tables: Operator(Operator_ID, Name, Pay_App), Facility(Facility_ID, Operator_ID, Name,
+Type, Lat, Lng), Zone(Zone_ID, Facility_ID, Name, Capacity, Visitor_Allowed),
+Rate_Rule(Rule_ID, Zone_ID, Day_Of_Week, Start_Time, End_Time, Hourly_Rate,
+Time_Limit_Min), Session(Session_ID, Zone_ID, Start_Time, Paid_Until, End_Time),
+Destination(Destination_ID, Name, Lat, Lng), Event(Event_ID, Destination_ID, Name,
+Start_Time, End_Time, Expected_Attendance), Impacts(Event_ID, Zone_ID, Demand_Boost),
+Zone_Status(Zone_ID, Occupied, Opening_Soon, Updated_At).
+Relationships: Operator 1:N Facility; Facility 1:N Zone; Zone 1:N Rate_Rule; Zone 1:N
+Session; Destination 1:N Event; Event M:N Zone via Impacts; Zone 1:1 Zone_Status.
+Walk distance calculated from lat/lng.
+
+Mermaid:
+erDiagram
+    OPERATOR ||--o{ FACILITY : runs
+    FACILITY ||--|{ ZONE : contains
+    ZONE ||--|{ RATE_RULE : "priced by"
+    ZONE ||--o{ SESSION : records
+    ZONE ||--|| ZONE_STATUS : live
+    DESTINATION ||--o{ EVENT : hosts
+    EVENT ||--o{ IMPACTS : ""
+    ZONE ||--o{ IMPACTS : ""
+    ]]></turn>
+
+    <turn n="16" role="user"><![CDATA[
+download all chat history into an xml file easily readable by an LLM like kiro or the copilot in github. this is context shared across all ai used across the project
+    ]]></turn>
+
+    <turn n="17" role="assistant"><![CDATA[
+Produced this file (project-context.xml).
+    ]]></turn>
+  </chat_history>
+
+  <sources>
+    <source>https://www.lehighvalleynews.com/bethlehem/parkbethlehem-initiative-to-keep-on-street-spaces-ready-for-the-masses-parking-authority</source>
+    <source>https://www.lehighvalleynews.com/bethlehem/off-street-parking-rates-to-rise-in-bethlehem-meter-fee-hike-will-go-before-mayor-public</source>
+    <source>https://www.lehighvalleynews.com/bethlehem/huge-new-bethlehem-parking-garage-opening-just-in-time-for-musikfest</source>
+    <source>https://cityrulelookup.com/parking/street-parking/bethlehem-pa</source>
+    <source>https://zoellner.cas.lehigh.edu/node/55</source>
+    <source>https://careercenter.lehigh.edu/content/visit-lehigh</source>
+    <source>https://www.lehigh.edu/~inpark/fysletterfy24.pdf</source>
+    <source>https://sustainability.lehigh.edu/sites/sustainability.lehigh.edu/files/Connections/Connections%20Programs_Events%20and%20Visitor%20Session.pdf</source>
+    <source>https://kiro.dev/docs/mcp/index</source>
+  </sources>
+</project_context>
