@@ -1,0 +1,244 @@
+/*
+ * Home page shell. Single column at compact widths; a comfortable 960 px
+ * measure at wide widths. Sections adapt to the page's own width through a
+ * container query (layout.md › Adaptability), so the sidebar's 220 px never
+ * leaves a cramped three-column row.
+ *
+ * Everything here stays quiet: system type, neutral opaque surfaces, and the
+ * accent only on the primary action (branding.md › Best practices). The dials
+ * in LiveCounts are the page's one signature element.
+ */
+
+.page {
+  container-type: inline-size;
+  display: grid;
+  gap: 32px;
+  max-width: 960px;
+  min-width: 0;
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  display: grid;
+  gap: 6px;
+  max-width: 40em;
+}
+
+.hero .gold-rule {
+  margin-top: 6px;
+  margin-bottom: 2px;
+}
+
+.subtitle {
+  color: var(--text-2);
+}
+
+/* Body 17/22 at a readable measure. */
+.thesis {
+  max-width: 34em;
+  margin-top: 8px;
+}
+
+/* ---------- Next steps ---------- */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Full-width stack when narrow; natural widths in one row when wide. */
+.action {
+  flex: 1 1 100%;
+}
+
+@container (min-width: 560px) {
+  .action {
+    flex: 0 0 auto;
+  }
+}
+
+/* ---------- Sections ---------- */
+.section {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* ---------- How It Works ---------- */
+.steps {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-content: start;
+  gap: 4px 12px;
+  padding: 16px;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+/* Plain digits in a neutral disc: the order is real (sessions feed the
+   estimates, which feed Plan and Explore). */
+.stepNumber {
+  display: grid;
+  place-items: center;
+  grid-row: 1 / span 2;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: max(15px, calc(15rem / 16));
+  line-height: 1;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.stepTitle {
+  grid-column: 2;
+  align-self: center;
+}
+
+/* Callout 16/21, secondary. */
+.stepText {
+  grid-column: 2;
+  color: var(--text-2);
+  font-size: max(16px, calc(16rem / 16));
+  line-height: calc(21 / 16);
+}
+
+@container (min-width: 720px) {
+  .steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .step {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .stepNumber,
+  .stepTitle,
+  .stepText {
+    grid-row: auto;
+    grid-column: 1;
+  }
+
+  .stepTitle {
+    align-self: start;
+  }
+}
+
+/* ---------- Data Sources ---------- */
+.sourcesLede {
+  max-width: 40em;
+}
+
+.sourcesGrid {
+  display: grid;
+  gap: 12px;
+}
+
+@container (min-width: 720px) {
+  .sourcesGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.sourceCard {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.rules {
+  display: grid;
+  gap: 12px;
+}
+
+.ruleGroup {
+  display: grid;
+  gap: 4px;
+}
+
+/* Subhead 15/20 semibold. */
+.ruleOperator {
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+  font-weight: 600;
+}
+
+/* Callout 16/21, secondary. */
+.ruleList,
+.roadmap {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0 0 0 1.1em;
+  color: var(--text-2);
+  font-size: max(16px, calc(16rem / 16));
+  line-height: calc(21 / 16);
+}
+
+.roadmap {
+  gap: 10px;
+}
+
+.roadmapName {
+  display: block;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.roadmapText {
+  display: block;
+}
+
+/* Footnote 13/18. */
+.footnote {
+  color: var(--text-2);
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+}
+
+/* Plain-text path: the docs folder isn't served by the web app. */
+.code {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.95em;
+  overflow-wrap: anywhere;
+}
+
+.privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 40em;
+}
+
+.privacyIcon {
+  display: block;
+  flex: none;
+  margin-top: 1px;
+  color: var(--text-2);
+}
+
+@media (prefers-contrast: more) {
+  .step,
+  .sourceCard {
+    box-shadow: inset 0 0 0 1px var(--text-2);
+  }
+}

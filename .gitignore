@@ -1,0 +1,13 @@
+.env*
+!.env.example
+.venv/
+__pycache__/
+.pytest_cache/
+node_modules/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+.DS_Store
+
+# Set-aside material, not part of the build (nested git repo, tools, old scaffold)
+/archive/

@@ -1,0 +1,422 @@
+/*
+ * Park LU global tokens and base styles (design.md › Frontend Design).
+ *
+ * This is the only shared stylesheet. Pages and components keep their own
+ * styles in CSS modules. scripts/check-contrast.mjs parses the two color-token
+ * blocks below (light `:root` and the dark `:root` inside
+ * `@media (prefers-color-scheme: dark)`), so keep every color token there as a
+ * plain hex value.
+ */
+
+/* ---------- Color tokens: light ---------- */
+:root {
+  --bg: #F7F4EF;
+  --surface: #FFFFFF;
+  --surface-2: #ECE6DC;
+  --text: #2A211B;
+  --text-2: #5C5048;
+  --separator: #DAD2C6;
+  --accent: #593D2B;
+  --on-accent: #FFFFFF;
+  --gold: #7A6730;
+  --on-gold: #FFFFFF;
+  --gold-fill: #A89968;
+  --on-gold-fill: #2A211B;
+  --free: #1F7A3A;
+  --tight: #9A5B00;
+  --full: #B3261E;
+  --alternative: #E5DECF;
+  --excluded: #6E645A;
+  --on-excluded: #FFFFFF;
+}
+
+/* ---------- Color tokens: dark (system setting only, no in-app toggle) ---------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15110E;
+    --surface: #211B16;
+    --surface-2: #2C251F;
+    --text: #F5F0E8;
+    --text-2: #BBAE9F;
+    --separator: #3A322A;
+    --accent: #D8B48C;
+    --on-accent: #1C140E;
+    --gold: #D8C27E;
+    --on-gold: #1C140E;
+    --gold-fill: #B9A463;
+    --on-gold-fill: #1C140E;
+    --free: #4CD07A;
+    --tight: #FFB340;
+    --full: #FF6B5E;
+    --alternative: #3A322A;
+    --excluded: #9A8E7E;
+    --on-excluded: #1C140E;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 16px rgb(0 0 0 / 0.5);
+    --shadow-raised: 0 2px 8px rgb(0 0 0 / 0.5), 0 12px 32px rgb(0 0 0 / 0.6);
+  }
+}
+
+
+/* ---------- Layout metrics (not colors) ---------- */
+:root {
+  color-scheme: light dark;
+  accent-color: var(--accent);
+
+  --font-system: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+
+  /* AppShell geometry. Pages use --app-bottom-inset to size full-height views
+     (for example the map) so the compact tab bar never covers content. */
+  --app-tab-bar-height: 56px;
+  --app-sidebar-width: 220px;
+  --app-bottom-inset: calc(var(--app-tab-bar-height) + env(safe-area-inset-bottom, 0px));
+
+  /* Page gutters applied by AppShell's <main>. A full-bleed child can cancel
+     them with negative margins: margin-inline: calc(-1 * var(--page-inline)). */
+  --page-inline: 16px;
+  --page-block: 16px;
+
+  --radius-card: 16px;
+  --radius-control: 12px;
+
+  /* v0-style elevation: soft, low-contrast shadows. Tuned up in dark mode. */
+  --shadow-card: 0 1px 2px rgb(41 33 27 / 0.04), 0 4px 16px rgb(41 33 27 / 0.06);
+  --shadow-raised: 0 2px 8px rgb(41 33 27 / 0.08), 0 12px 32px rgb(41 33 27 / 0.1);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --app-bottom-inset: 0px;
+    --page-inline: 32px;
+    --page-block: 24px;
+  }
+}
+
+/* ---------- Base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Keep keyboard-focused elements clear of the fixed tab bar. */
+  scroll-padding-bottom: var(--app-bottom-inset);
+}
+
+/* Sizes use rem so they follow the browser's text-size setting, with max()
+   floors so nothing renders below the spec (body 17 px, minimum 12 px). */
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-system);
+  font-size: max(17px, calc(17rem / 16));
+  line-height: calc(22 / 17);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+/* Default heading styles map to the type scale. */
+h1 {
+  font-size: calc(28rem / 16);
+  line-height: calc(34 / 28);
+  font-weight: 700;
+}
+
+h2 {
+  font-size: calc(20rem / 16);
+  line-height: calc(25 / 20);
+  font-weight: 600;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: max(17px, calc(17rem / 16));
+  line-height: calc(22 / 17);
+  font-weight: 600;
+}
+
+small {
+  font-size: max(13px, calc(13rem / 16));
+}
+
+/* Responsive media, but NOT inside a Leaflet map: Leaflet sizes its tiles in
+   exact pixels, and a global `max-width: 100%; height: auto` collapses them and
+   blanks the map (see the warning in leaflet.css). Scope the reset away from
+   the map container. */
+img:not(.leaflet-container img),
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Inline text links: color plus underline, so color is never the only cue. */
+a {
+  color: var(--accent);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ---------- Type scale (design.md › Type Scale) ---------- */
+.text-large-title {
+  font-size: calc(34rem / 16);
+  line-height: calc(41 / 34);
+  font-weight: 700;
+}
+
+.text-title {
+  font-size: calc(28rem / 16);
+  line-height: calc(34 / 28);
+  font-weight: 700;
+}
+
+.text-title-3 {
+  font-size: calc(20rem / 16);
+  line-height: calc(25 / 20);
+  font-weight: 600;
+}
+
+.text-headline {
+  font-size: max(17px, calc(17rem / 16));
+  line-height: calc(22 / 17);
+  font-weight: 600;
+}
+
+.text-body {
+  font-size: max(17px, calc(17rem / 16));
+  line-height: calc(22 / 17);
+  font-weight: 400;
+}
+
+.text-callout {
+  font-size: max(16px, calc(16rem / 16));
+  line-height: calc(21 / 16);
+  font-weight: 400;
+}
+
+.text-subhead {
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+  font-weight: 400;
+}
+
+.text-footnote {
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+  font-weight: 400;
+}
+
+/* Caption is the smallest style in the app (12 px floor, Req 17.3). */
+.text-caption {
+  font-size: max(12px, calc(12rem / 16));
+  line-height: calc(16 / 12);
+  font-weight: 400;
+}
+
+.text-secondary {
+  color: var(--text-2);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Utilities ---------- */
+.visually-hidden:not(:focus):not(:active) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Opaque content surface. Content never uses .material (Req 17.10). */
+.card {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+}
+
+/* Shared control styles. Primary uses the accent fill; keep it to one or two
+   per view. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: max(17px, calc(17rem / 16));
+  line-height: calc(22 / 17);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button-primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-card);
+}
+
+/* Gold eyebrow: a small uppercase label above a section title. The brand gold
+   as text (dark enough to pass 4.5:1); decorative gold fills use --gold-fill. */
+.eyebrow {
+  display: inline-block;
+  color: var(--gold);
+  font-size: max(12px, calc(12rem / 16));
+  line-height: calc(16 / 12);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* A thin gold rule, for section dividers and the hero underline. */
+.gold-rule {
+  height: 3px;
+  width: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--gold-fill);
+}
+
+.button:disabled,
+.button[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .button:not(:disabled):not([aria-disabled="true"]):hover {
+    box-shadow: inset 0 0 0 100vmax rgb(127 127 127 / 0.14);
+  }
+}
+
+.button:not(:disabled):not([aria-disabled="true"]):active {
+  box-shadow: inset 0 0 0 100vmax rgb(127 127 127 / 0.24);
+}
+
+/* ---------- Targets (Req 17.4) ---------- */
+/* Checkboxes and radios are excluded; wrap them in a label of at least
+   44 by 44 px, which becomes the hit area. */
+button,
+select,
+textarea,
+input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+[role="button"],
+.control {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* ---------- Focus (Req 17.13) ---------- */
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ---------- Material: Floating_Controls only (Req 17.9, 17.10) ---------- */
+/* Opaque by default; translucent only where color-mix and backdrop-filter
+   are both supported. */
+.material {
+  background-color: var(--surface);
+}
+
+@supports (background-color: color-mix(in srgb, red 50%, transparent)) and
+  ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .material {
+    background-color: color-mix(in srgb, var(--surface) 78%, transparent);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .material {
+    background-color: var(--surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .material {
+    background-color: var(--surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* ---------- Reduced motion (Req 17.8) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}

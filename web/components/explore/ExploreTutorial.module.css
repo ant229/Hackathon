@@ -1,0 +1,156 @@
+/*
+ * Explore tutorial card. A quiet brand moment: a gold hairline on the leading
+ * edge marks it as guidance, not data. Opaque content surface (Req 17.10),
+ * 44 px toggle, collapsible so it never crowds the phone filter list.
+ */
+
+.root {
+  border: 1px solid var(--separator);
+  border-left: 3px solid var(--gold-fill);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.heading {
+  margin: 0;
+}
+
+/* Full-width disclosure button, at least 44 px tall. */
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font-size: max(17px, calc(17rem / 16));
+  line-height: calc(22 / 17);
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+}
+
+.headingIcon {
+  flex: none;
+  color: var(--gold);
+}
+
+.title {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.chevron {
+  flex: none;
+  color: var(--text-2);
+}
+
+@media (hover: hover) {
+  .toggle:hover {
+    background: var(--surface-2);
+  }
+}
+
+.body {
+  display: grid;
+  gap: 12px;
+  padding: 0 14px 14px;
+}
+
+/* Callout 16/21, secondary. */
+.lede {
+  margin: 0;
+  color: var(--text-2);
+  font-size: max(16px, calc(16rem / 16));
+  line-height: calc(21 / 16);
+}
+
+.steps {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 4px 10px;
+  align-items: start;
+}
+
+/* Gold-fill disc with dark text: the brand gold used decoratively, not as text. */
+.stepNumber {
+  grid-row: 1 / span 2;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--gold-fill);
+  color: var(--on-gold-fill);
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.stepText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* Subhead 15/20 semibold. */
+.stepTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+  font-weight: 600;
+}
+
+.stepIcon {
+  flex: none;
+  color: var(--text-2);
+}
+
+/* Footnote 13/18, secondary. */
+.stepBody {
+  color: var(--text-2);
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+}
+
+.tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 10px;
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+}
+
+.tipIcon {
+  flex: none;
+  margin-top: 1px;
+  color: var(--gold);
+}
+
+@media (prefers-contrast: more) {
+  .root {
+    box-shadow: inset 0 0 0 1px var(--text-2);
+  }
+}

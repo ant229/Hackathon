@@ -1,0 +1,67 @@
+/*
+ * Explore layout (design.md › Layout). Compact: one column, with the selection
+ * bar sticky at the top and each field behind a disclosure. Wide (1024 px and
+ * up): filter panes on the left, KPIs, heatmap, and charts on the right.
+ */
+
+.view {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin-inline: calc(-1 * var(--page-inline));
+  padding: 8px var(--page-inline);
+  background: var(--bg);
+  border-bottom: 1px solid var(--separator);
+}
+
+.model {
+  margin: 0;
+  color: var(--text-2);
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+}
+
+.layout {
+  display: grid;
+  gap: 24px;
+  align-items: start;
+  min-width: 0;
+}
+
+.fields,
+.results {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.fields h2,
+.results h2 {
+  margin: 0;
+}
+
+.panes {
+  display: grid;
+  gap: 8px;
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+  }
+
+  /* The results column comes first on compact so numbers lead; keep DOM order. */
+  .panes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.layout[aria-busy="true"] .results {
+  cursor: progress;
+}

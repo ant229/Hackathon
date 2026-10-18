@@ -1,0 +1,409 @@
+/*
+ * DemoPanel: scenario tiles, the active-scenario card, the before/after table,
+ * and the presenter cue. The panel is a size container, so its layout follows
+ * the space AppShell leaves it rather than the viewport (layout.md › Size
+ * classes). Every surface is opaque content; no material here (Req 17.10).
+ *
+ * Color roles: accent marks the prominent action (Game Day) and the start
+ * icon; band colors (green, amber, red) never appear, because on this screen
+ * occupancy is reported in text only.
+ */
+
+.root {
+  container-type: inline-size;
+}
+
+/* ---------- Layout ---------- */
+/* Compact: one column in task order (act, status, outcome, next step).
+   Wide: controls and outcome on the leading side, status and cue trailing. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "controls"
+    "active"
+    "results"
+    "cue";
+  gap: 16px;
+}
+
+@container (min-width: 760px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+    grid-template-areas:
+      "controls active"
+      "results cue";
+    align-items: start;
+    column-gap: 24px;
+  }
+}
+
+/* ---------- Scenario controls ---------- */
+.controls {
+  grid-area: controls;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Equal-size tiles: the two scenarios are one coherent set; style, not size,
+   marks Game Day as the preferred choice (buttons.md › Style). */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 12px;
+}
+
+.tile {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: start;
+  width: 100%;
+  min-height: 96px;
+  padding: 16px;
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+}
+
+.tileProminent {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.tileIcon {
+  display: block;
+  color: var(--accent);
+}
+
+.tileProminent .tileIcon {
+  color: inherit;
+}
+
+.tileText {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* Title 3, 20/25 semibold. */
+.tileTitle {
+  font-size: calc(20rem / 16);
+  line-height: calc(25 / 20);
+  font-weight: 600;
+}
+
+/* Subhead 15/20. Full-strength on-accent on the prominent tile keeps contrast. */
+.tileDescription {
+  color: var(--text-2);
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+}
+
+.tileProminent .tileDescription {
+  color: var(--on-accent);
+}
+
+/* "Running Now" capsule: an outline plus text, in the tile's own text color. */
+.running {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  justify-self: start;
+  margin-top: 4px;
+  padding: 2px 10px 2px 8px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+  font-weight: 600;
+}
+
+/* Press and hover states for the custom tile (buttons.md › Best practices). */
+@media (hover: hover) {
+  .tile:not([aria-disabled="true"]):hover {
+    box-shadow: inset 0 0 0 100vmax rgb(127 127 127 / 0.12);
+  }
+}
+
+.tile:not([aria-disabled="true"]):active {
+  box-shadow: inset 0 0 0 100vmax rgb(127 127 127 / 0.22);
+}
+
+/* aria-disabled (not disabled) keeps keyboard focus on the pressed control
+   while a request runs. The busy control stays at full strength. */
+.tile[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.tile[aria-disabled="true"]:not([data-busy="true"]) {
+  opacity: 0.45;
+}
+
+.tile[data-busy="true"],
+.resetButton[aria-disabled="true"][data-busy="true"] {
+  opacity: 1;
+  cursor: progress;
+}
+
+/* In-control activity indicator (buttons.md › Mobile). Under reduced motion the
+   global rule stops the spin; the status line still says what is happening. */
+.spinner {
+  display: block;
+  width: 24px;
+  height: 24px;
+  margin: 2px;
+  border: 2.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+.tile .spinner {
+  color: var(--accent);
+}
+
+.tileProminent .spinner {
+  color: inherit;
+}
+
+.spinnerSmall {
+  width: 18px;
+  height: 18px;
+  margin: 1px;
+  border-width: 2px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.resetRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+/* Footnote 13/18. */
+.resetHint {
+  color: var(--text-2);
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+}
+
+/* Subhead 15/20. */
+.statusLine {
+  color: var(--text-2);
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+}
+
+/* ---------- Shared card pieces ---------- */
+/* Headline 17/22 semibold, overriding the global h2 size. */
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: max(17px, calc(17rem / 16));
+  line-height: calc(22 / 17);
+  font-weight: 600;
+}
+
+.cardTitleIcon {
+  display: block;
+  flex: none;
+  color: var(--text-2);
+}
+
+.muted {
+  color: var(--text-2);
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+}
+
+.footnote {
+  color: var(--text-2);
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+}
+
+/* ---------- Active scenario ---------- */
+.active {
+  grid-area: active;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+/* Title 3. */
+.eventName,
+.idleTitle {
+  font-size: calc(20rem / 16);
+  line-height: calc(25 / 20);
+  font-weight: 600;
+}
+
+.remaining {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+}
+
+/* Title 28/34 bold: the countdown is the card's one large number. */
+.remainingValue {
+  font-size: calc(28rem / 16);
+  line-height: calc(34 / 28);
+  font-weight: 700;
+}
+
+.remainingLabel {
+  color: var(--text-2);
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+}
+
+.endsAt {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Results ---------- */
+.results {
+  grid-area: results;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.caption {
+  caption-side: top;
+  padding-bottom: 8px;
+  text-align: left;
+}
+
+.captionTitle {
+  display: block;
+  font-size: calc(20rem / 16);
+  line-height: calc(25 / 20);
+  font-weight: 600;
+}
+
+.captionMeta {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-2);
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+}
+
+.table th,
+.table td {
+  padding: 10px 6px;
+  border-bottom: 1px solid var(--separator);
+  text-align: left;
+  vertical-align: top;
+}
+
+.table th:first-child,
+.table td:first-child {
+  padding-left: 0;
+}
+
+.table th:last-child,
+.table td:last-child {
+  padding-right: 0;
+}
+
+/* Column headings: Subhead semibold in secondary text. */
+.table thead th {
+  color: var(--text-2);
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.table .num {
+  text-align: right;
+}
+
+/* Row headers read as names, not headings. */
+.table .zone {
+  font-weight: 400;
+}
+
+.delta {
+  white-space: nowrap;
+}
+
+.skipped {
+  color: var(--text-2);
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+}
+
+.notes {
+  display: grid;
+  gap: 4px;
+  color: var(--text-2);
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+}
+
+/* ---------- Presenter cue ---------- */
+.cue {
+  grid-area: cue;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: start;
+}
+
+.cueIcon {
+  display: block;
+  color: var(--text);
+}
+
+.cueBody {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  min-width: 0;
+}
+
+/* ---------- Increased contrast ---------- */
+@media (prefers-contrast: more) {
+  .tile {
+    border-color: var(--text-2);
+  }
+
+  .tileProminent {
+    border-color: var(--accent);
+  }
+
+  .table th,
+  .table td {
+    border-bottom-color: var(--text-2);
+  }
+}

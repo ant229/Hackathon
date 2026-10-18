@@ -1,0 +1,76 @@
+/*
+ * ApiError: an opaque card with a warning icon, a Headline title, the message,
+ * the fix, and Try Again. The icon uses --text, not a band color: green, amber,
+ * and red mean availability only (Req 17.7).
+ */
+
+.root {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: start;
+  border: 1px solid var(--separator);
+}
+
+.icon {
+  display: block;
+  flex: none;
+  color: var(--text);
+}
+
+.body {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  min-width: 0;
+}
+
+/* Headline 17/22 semibold, overriding the global h2/h3 sizes. */
+.title {
+  font-size: max(17px, calc(17rem / 16));
+  line-height: calc(22 / 17);
+  font-weight: 600;
+}
+
+.message {
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+/* Subhead 15/20. */
+.fix {
+  color: var(--text-2);
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+}
+
+/* Footnote 13/18. */
+.detail {
+  color: var(--text-2);
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+  overflow-wrap: anywhere;
+}
+
+/* The start command: wraps at narrow widths and selects as one unit for copying. */
+.code {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.875em;
+  overflow-wrap: anywhere;
+  -webkit-user-select: all;
+  user-select: all;
+}
+
+.retry {
+  margin-top: 4px;
+}
+
+@media (prefers-contrast: more) {
+  .root {
+    border-color: var(--text-2);
+  }
+}
