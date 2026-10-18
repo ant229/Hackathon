@@ -7,6 +7,7 @@
 import Link from "next/link";
 import { ApiError } from "@/components/ApiError";
 import { Dial } from "@/components/Dial";
+import { OccupancyBar } from "@/components/OccupancyBar";
 import { EmptyState } from "@/components/EmptyState";
 import type { OpeningSoonResponse, Zone } from "@/lib/api";
 import { formatHourlyRate, formatLocalTime, formatNumber, formatTimeLimit, percentFree } from "@/lib/format";
@@ -102,8 +103,8 @@ export default function ZonePanel({ zones, selected, onSelect, openingSoon, onRe
                 <span className={styles.rowText}>
                   <span className={styles.rowName}>{zone.zone_name}</span>
                   <span className={styles.rowMeta}>{zone.operator}</span>
+                  <OccupancyBar occupied={zone.status.occupied} decorative hideCaption className={styles.rowBar} />
                 </span>
-                <Dial occupied={zone.status.occupied} size="sm" decorative />
                 <span className="visually-hidden">{`${percentFree(zone.status.occupied)}% free`}</span>
               </button>
             </li>
@@ -126,6 +127,7 @@ function ZoneDetails({ zone }: { zone: Zone }) {
         </div>
         <Dial occupied={s.occupied} size="lg" label={zone.zone_name} />
       </div>
+      <OccupancyBar occupied={s.occupied} label="Occupancy Now" className={styles.occupancyBar} />
       <dl className={styles.facts}>
         <Fact label="Operator" value={zone.operator} />
         <Fact label="Pay With" value={zone.pay_app.length > 0 ? zone.pay_app.join(", ") : "No pay app"} />

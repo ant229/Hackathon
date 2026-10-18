@@ -30,7 +30,7 @@ The simulator generates 28 days of pay-by-hour sessions at startup (about 137,00
 
 ## Run It
 
-**Prerequisites:** [uv](https://docs.astral.sh/uv/) (installs Python 3.13 for you) and a Node.js version supported by Next.js 16, with npm. No accounts, API keys, or hosted services are needed (map tiles come from public OpenStreetMap servers). There is no authentication in the local build, including on the demo endpoint.
+**Prerequisites:** [uv](https://docs.astral.sh/uv/) (installs Python 3.13 for you) and a Node.js version supported by Next.js 16, with npm. No accounts, API keys, or hosted services are needed (map tiles come from public, keyless CARTO/OpenStreetMap servers). There is no authentication in the local build, including on the demo endpoint.
 
 Run these in two terminals:
 

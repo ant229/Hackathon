@@ -1,0 +1,103 @@
+/*
+ * Occupancy bar with a fixed green -> amber -> red gradient. The track shows a
+ * faint ghost of the whole scale; the fill reveals the same gradient from the
+ * left as the zone fills, so the left edge is always green and the right always
+ * red. An empty zone shows a green sliver, a full zone the whole sweep into red.
+ * Text carries the percent and band, so color is never the only signal (Req 17.7).
+ */
+
+.root {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+}
+
+.captionLabel {
+  font-weight: 600;
+}
+
+.captionValue {
+  color: var(--text-2);
+}
+
+/* The track holds the full green -> amber -> red gradient as a faint ghost, so
+   even an empty bar hints at the scale. position: relative anchors the fill's
+   gradient to the TRACK width, not the fill width. */
+.track {
+  container-type: inline-size;
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--separator);
+}
+
+/* A faint ghost of the full gradient on the empty track, so the green->red
+   scale is visible even before the fill covers it. */
+.track::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.18;
+  background: linear-gradient(
+    90deg,
+    var(--free) 0%,
+    var(--free) 35%,
+    var(--tight) 62%,
+    var(--full) 88%,
+    var(--full) 100%
+  );
+}
+
+/* The fill reveals the same gradient from the left. The gradient is painted at
+   the full track width (width: 100% on an absolutely-positioned layer) and the
+   fill's own width clips it, so the colors stay fixed in place: the left edge is
+   always green and the right edge always red, and filling just uncovers more of
+   it. An empty zone shows a sliver of green; a full zone shows the whole sweep
+   ending in red. */
+.fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  transition: width 300ms ease-out;
+}
+
+.fill::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 100cqw;
+  min-width: 100%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--free) 0%,
+    var(--free) 35%,
+    var(--tight) 62%,
+    var(--full) 88%,
+    var(--full) 100%
+  );
+}
+
+@media (prefers-contrast: more) {
+  .track {
+    box-shadow: inset 0 0 0 1px var(--text-2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fill {
+    transition: none;
+  }
+}
