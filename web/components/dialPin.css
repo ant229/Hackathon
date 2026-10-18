@@ -1,0 +1,149 @@
+/*
+ * Availability Dial pins: styles for the HTML string from renderDialHtml()
+ * (./dialMarkup.ts), rendered by Leaflet divIcons.
+ *
+ * This is a plain global stylesheet because Leaflet injects the markup as raw
+ * HTML. Every selector is scoped under the "ss-dial" prefix, so nothing here
+ * reaches other elements. Import it once from the map component only:
+ *
+ *   import "../dialPin.css";   // in web/components/map/ZoneMap.tsx
+ *
+ * Geometry comes from DIAL_GEOMETRY and DIAL_PIN in dialMarkup.ts; the pixel
+ * values below (44 px ring, 20 px capsule) match DIAL_PIN.height = 66.
+ * Colors are the global tokens from app/globals.css, so pins follow light and
+ * dark appearance with the rest of the app.
+ */
+
+/* Leaflet icon box (divIcon className: DIAL_PIN.className). Replaces the
+   default white .leaflet-div-icon box. */
+.ss-dial-icon {
+  background: none;
+  border: 0;
+  border-radius: 14px;
+}
+
+.ss-dial-icon:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.ss-dial {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--font-system);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.ss-dial-ring {
+  display: block;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: visible;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.3));
+}
+
+.ss-dial-disc {
+  fill: var(--surface);
+}
+
+.ss-dial-track {
+  stroke: var(--separator);
+}
+
+.ss-dial-arc {
+  stroke: var(--text-2);
+  transition: stroke-dashoffset 300ms ease-out;
+}
+
+/* Band colors: green >= 40 % free, amber 15-39 %, red < 15 % (Req 7.3). */
+.ss-dial[data-band="free"] .ss-dial-arc {
+  stroke: var(--free);
+}
+
+.ss-dial[data-band="tight"] .ss-dial-arc {
+  stroke: var(--tight);
+}
+
+.ss-dial[data-band="full"] .ss-dial-arc {
+  stroke: var(--full);
+}
+
+/* Tint the track with the band color so a nearly empty arc still reads as its
+   band. Browsers without color-mix keep the neutral --separator track. */
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  .ss-dial[data-band="free"] .ss-dial-track {
+    stroke: color-mix(in srgb, var(--free) 25%, var(--surface));
+  }
+
+  .ss-dial[data-band="tight"] .ss-dial-track {
+    stroke: color-mix(in srgb, var(--tight) 25%, var(--surface));
+  }
+
+  .ss-dial[data-band="full"] .ss-dial-track {
+    stroke: color-mix(in srgb, var(--full) 25%, var(--surface));
+  }
+}
+
+/* Caption capsule, "62% free". Fixed 12 px (the app minimum, Req 17.3) so the
+   pin keeps the size Leaflet anchors it with. */
+.ss-dial-capsule {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  border: 1px solid var(--separator);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+}
+
+/* Selected zone: accent halo plus an accent capsule. Shape and fill change
+   together, so selection never depends on hue alone. */
+.ss-dial-selected .ss-dial-ring {
+  box-shadow: 0 0 0 3px var(--accent);
+}
+
+.ss-dial-selected .ss-dial-capsule {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.ss-dial-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-contrast: more) {
+  .ss-dial-capsule {
+    border-color: var(--text-2);
+  }
+}
+
+/* Dial transitions become instant (Req 17.8). */
+@media (prefers-reduced-motion: reduce) {
+  .ss-dial-arc {
+    transition: none;
+  }
+}

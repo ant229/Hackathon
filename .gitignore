@@ -1,22 +1,13 @@
-# secrets
-.env
-.env.*
+.env*
 !.env.example
-
-# python
-__pycache__/
-*.pyc
-.pytest_cache/
-.ruff_cache/
 .venv/
-
-# node / next
+__pycache__/
+.pytest_cache/
 node_modules/
-web/.next/
-web/out/
+.next/
+next-env.d.ts
 *.tsbuildinfo
-
-# os / editors
 .DS_Store
-.vscode/
-.idea/
+
+# Set-aside material, not part of the build (nested git repo, tools, old scaffold)
+/archive/

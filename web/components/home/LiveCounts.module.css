@@ -1,0 +1,210 @@
+/*
+ * Home live block: one opaque content card (Req 17.10) with the stream chip,
+ * the two headline numbers, and the key-zone dial strip. Layout follows the
+ * card's own width through a container query, not the viewport (layout.md ›
+ * Adaptability): stacked when narrow, numbers beside the dials when wide.
+ *
+ * Colors: the dials carry the only green, amber, and red on the page; the
+ * live dot uses the accent, a status indicator (branding.md › Best practices).
+ */
+
+.root {
+  container-type: inline-size;
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+  padding: 16px;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--text);
+}
+
+@media (min-width: 768px) {
+  .root {
+    padding: 24px;
+  }
+}
+
+/* ---------- Header: title, stream chip, updated time ---------- */
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+/* Icon plus text, so the stream state never depends on color (Req 17.7).
+   Subhead 15/20 semibold. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chipIcon {
+  display: block;
+  flex: none;
+}
+
+.chip[data-state="live"] .chipIcon {
+  color: var(--accent);
+}
+
+/* Footnote 13/18. */
+.updated {
+  color: var(--text-2);
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+}
+
+.loading {
+  min-height: 44px;
+}
+
+/* ---------- Numbers and dials ---------- */
+.content {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+
+.stats {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  align-content: start;
+}
+
+.stat {
+  display: grid;
+  gap: 2px;
+}
+
+/* Subhead 15/20 semibold, secondary. */
+.statLabel {
+  color: var(--text-2);
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+  font-weight: 600;
+}
+
+/* Number and its denominator on one baseline, wrapping as a sentence. */
+.statValue {
+  margin: 0;
+}
+
+/* Large Title 34/41 bold, tabular so ticks don't shift the line. The headline
+   number is the loudest element in the live card. */
+.statNumber {
+  font-size: calc(34rem / 16);
+  line-height: calc(41 / 34);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Callout 16/21. */
+.statDetail {
+  color: var(--text-2);
+  font-size: max(16px, calc(16rem / 16));
+  line-height: calc(21 / 16);
+  font-variant-numeric: tabular-nums;
+}
+
+.keyZones {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Subhead 15/20 semibold, secondary, matching the stat labels. */
+.keyZonesTitle {
+  color: var(--text-2);
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+  font-weight: 600;
+}
+
+.places {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: 16px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.place {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* The dial leads visually; the name leads in reading order. */
+.placeDial {
+  flex: none;
+  order: -1;
+}
+
+.placeText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 4px;
+}
+
+/* Headline 17/22. */
+.placeName {
+  font-size: max(17px, calc(17rem / 16));
+  line-height: calc(22 / 17);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* Subhead 15/20. */
+.placeOpen {
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+}
+
+/* Footnote 13/18, secondary. */
+.placeMeta {
+  color: var(--text-2);
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+}
+
+/* Wide card: numbers beside the dial strip. */
+@container (min-width: 680px) {
+  .content {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: 32px;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .root {
+    box-shadow: inset 0 0 0 1px var(--text-2);
+  }
+
+  .chip {
+    box-shadow: inset 0 0 0 1px var(--text-2);
+  }
+}

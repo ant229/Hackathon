@@ -1,0 +1,34 @@
+/*
+ * EmptyState: centered, transparent, so it sits on a page, a card, or the map
+ * panel. The caller supplies any surface.
+ */
+
+.root {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.icon {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-2);
+}
+
+/* Title 3, 20/25 semibold. */
+.title {
+  font-size: calc(20rem / 16);
+  line-height: calc(25 / 20);
+  font-weight: 600;
+}
+
+.description {
+  max-width: 36em;
+  color: var(--text-2);
+}
+
+.action {
+  margin-top: 8px;
+}

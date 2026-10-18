@@ -1,0 +1,106 @@
+/*
+ * Availability Dial (React). Mirrors dialPin.css, which styles the same markup
+ * for Leaflet pins; geometry comes from DIAL_GEOMETRY in dialMarkup.ts.
+ */
+
+.dial {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  vertical-align: middle;
+  color: var(--text);
+}
+
+.ring {
+  display: block;
+  flex: none;
+  overflow: visible;
+}
+
+.sm .ring {
+  width: 44px;
+  height: 44px;
+}
+
+.lg .ring {
+  width: 72px;
+  height: 72px;
+}
+
+.disc {
+  fill: var(--surface);
+}
+
+.track {
+  stroke: var(--separator);
+}
+
+.arc {
+  stroke: var(--text-2);
+  transition: stroke-dashoffset 300ms ease-out;
+}
+
+/* Band colors: green >= 40 % free, amber 15-39 %, red < 15 % (Req 7.3). */
+.dial[data-band="free"] .arc {
+  stroke: var(--free);
+}
+
+.dial[data-band="tight"] .arc {
+  stroke: var(--tight);
+}
+
+.dial[data-band="full"] .arc {
+  stroke: var(--full);
+}
+
+/* Tint the track with the band color so a nearly empty arc still reads as its
+   band. Browsers without color-mix keep the neutral --separator track. */
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  .dial[data-band="free"] .track {
+    stroke: color-mix(in srgb, var(--free) 25%, var(--surface));
+  }
+
+  .dial[data-band="tight"] .track {
+    stroke: color-mix(in srgb, var(--tight) 25%, var(--surface));
+  }
+
+  .dial[data-band="full"] .track {
+    stroke: color-mix(in srgb, var(--full) 25%, var(--surface));
+  }
+}
+
+/* Caption capsule, "62% free" (Caption 12/16, emphasized; Req 17.3). */
+.capsule {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: max(12px, calc(12rem / 16));
+  line-height: calc(16 / 12);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Band label as text ("Plenty Free"), Footnote 13/18. */
+.bandLabel {
+  color: var(--text-2);
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+  white-space: nowrap;
+}
+
+@media (prefers-contrast: more) {
+  .capsule {
+    box-shadow: inset 0 0 0 1px var(--text-2);
+  }
+}
+
+/* Dial transitions become instant (Req 17.8). */
+@media (prefers-reduced-motion: reduce) {
+  .arc {
+    transition: none;
+  }
+}

@@ -1,0 +1,183 @@
+/*
+ * ZoneMap: the Leaflet canvas for the Live Map.
+ *
+ * .root is the labeled region and fills its parent. `isolation: isolate`
+ * contains Leaflet's pane and control z-indices (200–1000), so the AppShell
+ * tab bar (1100) and skip link (1200) always paint above the map.
+ *
+ * Leaflet's own elements are restyled with tokens through :global() under
+ * .root .map, which outranks leaflet.css regardless of stylesheet order.
+ * Dial pins are styled by ../dialPin.css.
+ *
+ * Page hooks (set on any ancestor):
+ *   --zone-map-inset-top     lowers the top controls and the tile note
+ *   --zone-map-inset-bottom  raises the attribution above a floating panel
+ */
+
+.root {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 100%;
+  min-height: 240px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.map {
+  position: absolute;
+  inset: 0;
+}
+
+/* Plain --surface-2 behind the tiles, and the whole background when tiles
+   fail (Req 7.11). System type everywhere, including Leaflet's controls
+   (Req 17.1). */
+.root .map:global(.leaflet-container) {
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: var(--font-system);
+  font-size: max(12px, calc(12rem / 16));
+  line-height: calc(16 / 12);
+}
+
+/* The map container takes focus for arrow-key panning; draw its ring inside
+   so the region's overflow never clips it. */
+.root .map:global(.leaflet-container):focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
+}
+
+/* ---------- Control positions ---------- */
+.root .map :global(.leaflet-top) {
+  top: var(--zone-map-inset-top, 0px);
+}
+
+.root .map :global(.leaflet-bottom) {
+  bottom: var(--zone-map-inset-bottom, 0px);
+}
+
+/* ---------- Zoom control: 44 px targets on an opaque surface (Req 17.4) ---------- */
+.root .map :global(.leaflet-control-zoom) {
+  margin: 12px 12px 0 0;
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  background-clip: border-box;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+}
+
+.root .map :global(.leaflet-control-zoom a) {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-bottom: 1px solid var(--separator);
+  background-color: var(--surface);
+  color: var(--text);
+  font: 600 22px/1 var(--font-system);
+  text-indent: 0;
+  text-decoration: none;
+}
+
+.root .map :global(.leaflet-control-zoom a:first-child) {
+  border-top-left-radius: calc(var(--radius-control) - 1px);
+  border-top-right-radius: calc(var(--radius-control) - 1px);
+}
+
+.root .map :global(.leaflet-control-zoom a:last-child) {
+  border-bottom: 0;
+  border-bottom-left-radius: calc(var(--radius-control) - 1px);
+  border-bottom-right-radius: calc(var(--radius-control) - 1px);
+}
+
+.root .map :global(.leaflet-control-zoom a:focus) {
+  background-color: var(--surface);
+}
+
+@media (hover: hover) {
+  .root .map :global(.leaflet-control-zoom a:not(.leaflet-disabled):hover) {
+    background-color: var(--surface-2);
+  }
+}
+
+.root .map :global(.leaflet-control-zoom a:not(.leaflet-disabled):active) {
+  background-color: var(--surface-2);
+}
+
+/* At the zoom limit: dimmed glyph plus Leaflet's aria-disabled. */
+.root .map :global(.leaflet-control-zoom a.leaflet-disabled) {
+  background-color: var(--surface);
+  color: var(--text-2);
+  cursor: not-allowed;
+}
+
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  .root .map :global(.leaflet-control-zoom a.leaflet-disabled) {
+    color: color-mix(in srgb, var(--text-2) 55%, var(--surface));
+  }
+}
+
+/* ---------- Attribution: opaque so its 12 px text keeps its contrast ---------- */
+.root .map :global(.leaflet-control-attribution) {
+  margin: 0;
+  padding: 2px 8px;
+  border-top-left-radius: 8px;
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: max(12px, calc(12rem / 16));
+  line-height: calc(16 / 12);
+}
+
+.root .map :global(.leaflet-control-attribution a) {
+  color: var(--accent);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+
+/* ---------- Tile fallback note ---------- */
+/* The live region stays rendered (never display: none) so screen readers
+   announce the note when it appears. It has no in-flow size of its own. */
+.status {
+  margin: 0;
+}
+
+/* Text plus an icon, so the state never depends on the plain background
+   alone (Req 17.7). Opaque content surface, not a material (Req 17.10). */
+.tileNote {
+  position: absolute;
+  top: calc(var(--zone-map-inset-top, 0px) + 12px);
+  left: 12px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 24px - 56px); /* clear of the zoom control */
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+}
+
+.tileNoteIcon {
+  flex: none;
+  color: var(--text-2);
+}
+
+/* ---------- Increased contrast ---------- */
+@media (prefers-contrast: more) {
+  .root .map :global(.leaflet-control-zoom),
+  .root .map :global(.leaflet-control-zoom a),
+  .tileNote {
+    border-color: var(--text-2);
+  }
+
+  .root .map :global(.leaflet-control-attribution) {
+    color: var(--text);
+  }
+}

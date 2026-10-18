@@ -1,0 +1,18 @@
+/* Plan a Visit page shell: title, lede, then the PlanView layout. */
+
+.page {
+  display: grid;
+  gap: 24px;
+  max-width: 1200px;
+  min-width: 0;
+}
+
+.header {
+  display: grid;
+  gap: 8px;
+  max-width: 40em;
+}
+
+.lede {
+  color: var(--text-2);
+}

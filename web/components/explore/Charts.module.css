@@ -1,0 +1,399 @@
+/*
+ * Explore KPI row, heatmap, and bar charts (task 11.2).
+ *
+ * Color rules (design.md › Tokens): --free, --tight, and --full mean
+ * availability only, so they appear here only on heatmap cells and the heatmap
+ * key. Bars are neutral --text-2; a selected bar is --accent with a check.
+ * Content surfaces are opaque (Req 17.10). Nothing animates (Req 17.8).
+ * Every interactive target is at least 44 px (Req 17.4); text never drops
+ * below 12 px (Req 17.3).
+ */
+
+/* ---------- KPI row ---------- */
+
+.kpiRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.kpiTile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px 16px;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* Footnote 13/18, secondary. */
+.kpiLabel {
+  color: var(--text-2);
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+}
+
+/* Title 3 comes from the global .text-title-3 class. */
+.kpiValue {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* While a new selection loads, the previous values stay visible but dimmed.
+   0.65 keeps --text at about 5:1 or better on --surface in both appearances. */
+.kpiLoading .kpiValue {
+  opacity: 0.65;
+}
+
+/* ---------- Shared figure ---------- */
+
+.figure {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.caption {
+  display: grid;
+  gap: 4px;
+}
+
+/* Headline 17/22 semibold, whatever the heading level. */
+.chartTitle {
+  margin: 0;
+  font-size: max(17px, calc(17rem / 16));
+  line-height: calc(22 / 17);
+  font-weight: 600;
+}
+
+/* Footnote 13/18, secondary. */
+.chartDescription {
+  color: var(--text-2);
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+  max-width: 60em;
+}
+
+/* Subhead 15/20. */
+.chartSummary {
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+}
+
+.chartEmpty {
+  color: var(--text-2);
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+}
+
+/* ---------- Heatmap key ---------- */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+}
+
+.legendLabel {
+  font-weight: 600;
+}
+
+.legendMeaning {
+  color: var(--text-2);
+}
+
+.swatch {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: var(--surface-2);
+}
+
+.swatch[data-band="free"] {
+  background: var(--free);
+}
+
+.swatch[data-band="tight"] {
+  background: var(--tight);
+}
+
+.swatch[data-band="full"] {
+  background: var(--full);
+}
+
+.swatch[data-band="none"] {
+  box-shadow: inset 0 0 0 1px var(--separator);
+}
+
+/* ---------- Heatmap grid ---------- */
+
+/* Labeled, focusable scroll region. Narrow screens scroll it sideways while the
+   day labels stay pinned; scroll padding keeps a focused cell clear of them. */
+.hmScroll {
+  --hm-day-col: 3rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline-start: calc(var(--hm-day-col) + 4px);
+  padding-block: 4px;
+}
+
+.hmGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: max-content;
+}
+
+.hmHeader,
+.hmRow {
+  display: grid;
+  grid-template-columns: var(--hm-day-col) repeat(24, 44px);
+  column-gap: 2px;
+  align-items: center;
+}
+
+/* Sticky first column, opaque so cells pass beneath it. */
+.hmCorner,
+.hmDay {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 3;
+  align-self: stretch;
+  background: var(--surface);
+}
+
+/* Day labels, Footnote 13/18 secondary. */
+.hmDay {
+  display: flex;
+  align-items: center;
+  padding-inline-end: 6px;
+  color: var(--text-2);
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+}
+
+/* Hour axis labels every 3 hours, Caption 12/16. They may overflow into the
+   unlabeled columns to their right. */
+.hmHour {
+  min-width: 0;
+  padding-bottom: 2px;
+  color: var(--text-2);
+  font-size: max(12px, calc(12rem / 16));
+  line-height: calc(16 / 12);
+  white-space: nowrap;
+}
+
+/* 44 px cell buttons. Text on a band fill uses --surface, which has the same
+   contrast as the band color on --surface (checked by check-contrast.mjs). */
+.hmCell {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: max(12px, calc(12rem / 16));
+  line-height: calc(16 / 12);
+  font-weight: 600;
+}
+
+.hmCell[data-band="free"] {
+  background: var(--free);
+  color: var(--surface);
+}
+
+.hmCell[data-band="tight"] {
+  background: var(--tight);
+  color: var(--surface);
+}
+
+.hmCell[data-band="full"] {
+  background: var(--full);
+  color: var(--surface);
+}
+
+/* Selected: an accent ring with a surface ring inside it, so the ring reads
+   against any band fill, plus heavier text. */
+.hmCell[aria-pressed="true"] {
+  box-shadow:
+    inset 0 0 0 3px var(--accent),
+    inset 0 0 0 5px var(--surface);
+  font-weight: 700;
+}
+
+@media (hover: hover) {
+  .hmCell:not([aria-pressed="true"]):hover {
+    box-shadow: inset 0 0 0 2px var(--text);
+  }
+}
+
+/* Lift the focused cell so its focus ring draws over its neighbors; the sticky
+   day column (z-index 3) still covers cells scrolled beneath it. */
+.hmCell:focus-visible {
+  position: relative;
+  z-index: 2;
+}
+
+/* ---------- Bar chart ---------- */
+
+.barList {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Each bar is a full-width row: label and value, then the bar. */
+.bar {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  text-align: start;
+}
+
+@media (hover: hover) {
+  button.bar:hover {
+    box-shadow: inset 0 0 0 100vmax rgb(127 127 127 / 0.14);
+  }
+}
+
+button.bar:active {
+  box-shadow: inset 0 0 0 100vmax rgb(127 127 127 / 0.24);
+}
+
+.barHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Subhead 15/20. */
+.barLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+}
+
+.barName {
+  overflow-wrap: anywhere;
+}
+
+.barCheck {
+  flex: none;
+  color: var(--accent);
+}
+
+.bar[data-selected] .barName {
+  font-weight: 600;
+}
+
+/* Subhead 15/20 semibold, tabular. */
+.barValue {
+  flex: none;
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+  font-weight: 600;
+}
+
+/* Footnote 13/18, secondary. */
+.barDetail {
+  color: var(--text-2);
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+}
+
+.barTrack {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.barFill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--text-2);
+}
+
+.bar[data-selected] .barFill {
+  background: var(--accent);
+}
+
+.barMore {
+  justify-self: start;
+}
+
+/* ---------- Increased contrast and forced colors ---------- */
+
+@media (prefers-contrast: more) {
+  .hmCell[data-band="none"]:not([aria-pressed="true"]),
+  .swatch[data-band="none"] {
+    box-shadow: inset 0 0 0 1px var(--text-2);
+  }
+
+  .barTrack {
+    box-shadow: inset 0 0 0 1px var(--text-2);
+  }
+}
+
+/* Windows high contrast drops background colors; keep bars and the selection
+   visible with system colors. */
+@media (forced-colors: active) {
+  .barFill {
+    background: CanvasText;
+  }
+
+  .bar[data-selected] .barFill {
+    background: Highlight;
+  }
+
+  .hmCell {
+    border: 1px solid CanvasText;
+  }
+
+  .hmCell[aria-pressed="true"] {
+    outline: 3px solid Highlight;
+    outline-offset: -3px;
+  }
+}

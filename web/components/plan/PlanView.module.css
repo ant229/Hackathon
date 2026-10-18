@@ -1,0 +1,363 @@
+/*
+ * Plan a Visit: form (destinations + arrival) and ranked results.
+ * Single column on compact widths; form left, results right at 1024 px and wider.
+ * Accent means Selected (destination cards, active chip); green, amber, and red
+ * appear only in the availability dials (Req 17.7). Content surfaces are opaque.
+ */
+
+.layout {
+  display: grid;
+  gap: 32px;
+  align-items: start;
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  }
+}
+
+/* ---------- Form ---------- */
+
+.form {
+  display: grid;
+  gap: 32px;
+  min-width: 0;
+}
+
+.fieldset {
+  min-width: 0;
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* Title 3, 20/25 semibold: the legend and the Arriving label share one style. */
+.sectionTitle {
+  display: block;
+  padding: 0;
+  margin-bottom: 12px;
+  font-size: calc(20rem / 16);
+  line-height: calc(25 / 20);
+  font-weight: 600;
+}
+
+.options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
+  gap: 8px;
+}
+
+/* Radio card. The real radio covers the whole card, so the card is the hit
+   area (>= 44 px) and the focus ring draws around it. */
+.option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 12px 16px;
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+/* Selected: 2 px accent border plus a check, never color alone. */
+.optionSelected {
+  padding: 11px 15px;
+  border: 2px solid var(--accent);
+}
+
+.radio {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.indicator {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--text-2);
+  border-radius: 50%;
+  color: var(--on-accent);
+}
+
+.optionSelected .indicator {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.optionName {
+  min-width: 0;
+}
+
+.optionSelected .optionName {
+  font-weight: 600;
+}
+
+@media (hover: hover) {
+  .option:not(.optionSelected):hover {
+    border-color: var(--text-2);
+  }
+}
+
+/* ---------- Arrival ---------- */
+
+.arrival {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* The label's margin is replaced by the grid gap here. */
+.arrival > .sectionTitle {
+  margin-bottom: 0;
+}
+
+.input {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Invalid: heavier border, and the hint below says what to do. */
+.input[aria-invalid="true"] {
+  border: 2px solid var(--text);
+  padding: 7px 11px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--separator);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chipActive {
+  padding: 0 15px;
+  border: 2px solid var(--accent);
+}
+
+@media (hover: hover) {
+  .chip:not(.chipActive):hover {
+    border-color: var(--text-2);
+  }
+}
+
+.chip:active {
+  background: var(--surface-2);
+}
+
+/* ---------- Results ---------- */
+
+.results {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.resultsHeader {
+  display: grid;
+  gap: 4px;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: calc(20em / 15);
+}
+
+.spinner {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--separator);
+  border-top-color: var(--text-2);
+  border-radius: 50%;
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* A static ring under reduced motion; the status text still says "Finding parking…". */
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}
+
+.prompt {
+  border: 1px solid var(--separator);
+}
+
+.list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.result {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.resultHeader {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.rank {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: max(15px, calc(15rem / 16));
+  line-height: 1;
+  font-weight: 700;
+}
+
+.resultTitles {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.dial {
+  flex: none;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(104px, 100%), 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.fact {
+  display: grid;
+  gap: 2px;
+  align-content: start;
+  min-width: 0;
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+}
+
+/* "Not enforced at that time — check posted signs" gets the full row. */
+.factWide {
+  grid-column: 1 / -1;
+}
+
+/* Footnote 13/18. */
+.factTerm {
+  color: var(--text-2);
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+}
+
+.factValue {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* "Beyond 25-min walk": neutral, so color keeps its availability meaning. */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid var(--text-2);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: max(12px, calc(12rem / 16));
+  line-height: calc(16 / 12);
+  font-weight: 600;
+}
+
+.line {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.lineIcon {
+  flex: none;
+  margin-top: 1px;
+}
+
+/* Event warning: icon plus text on a neutral panel, never amber or red. */
+.warning {
+  padding: 8px 12px;
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.score {
+  padding-top: 12px;
+  border-top: 1px solid var(--separator);
+}
+
+/* Stronger hairlines; selected and invalid borders keep their own colors. */
+@media (prefers-contrast: more) {
+  .option:not(.optionSelected),
+  .chip:not(.chipActive),
+  .input:not([aria-invalid="true"]),
+  .prompt,
+  .warning {
+    border-color: var(--text-2);
+  }
+}

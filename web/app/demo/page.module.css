@@ -1,0 +1,27 @@
+/*
+ * Demo page shell: title, subtitle, and the closing no-auth footnote.
+ * DemoPanel.module.css owns the panel layout.
+ */
+
+.page {
+  display: grid;
+  gap: 20px;
+  max-width: 1120px;
+}
+
+.header {
+  display: grid;
+  gap: 4px;
+}
+
+.subtitle {
+  max-width: 40em;
+  color: var(--text-2);
+}
+
+/* Footnote 13/18. */
+.footnote {
+  color: var(--text-2);
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+}

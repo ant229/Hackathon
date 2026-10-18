@@ -1,0 +1,202 @@
+/*
+ * Live Map layout (Req 7, 17.9, 17.10).
+ * Compact: the map fills the stage and the panel floats over its lower part on
+ * .material, collapsible so the map stays usable. Wide (768 px and up): the
+ * panel sits beside the map in its own column.
+ * Green, amber, and red appear only in the dials and the legend swatches, and
+ * every swatch has a text label next to it (Req 17.7).
+ */
+
+.view {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.header h1 {
+  margin: 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: max(15px, calc(15rem / 16));
+  line-height: calc(20 / 15);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chip[data-state="live"] svg {
+  color: var(--accent);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: max(13px, calc(13rem / 16));
+  line-height: calc(18 / 13);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.swatch {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+
+.swatch[data-band="free"] {
+  background: var(--free);
+}
+
+.swatch[data-band="tight"] {
+  background: var(--tight);
+}
+
+.swatch[data-band="full"] {
+  background: var(--full);
+}
+
+/* ---------- Stage ---------- */
+.stage {
+  position: relative;
+  height: calc(100dvh - var(--app-bottom-inset) - 160px);
+  min-height: 420px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  /* Keeps Leaflet's attribution clear of the floating panel. */
+  --zone-map-inset-bottom: 52%;
+}
+
+.stage[data-collapsed="true"] {
+  --zone-map-inset-bottom: 60px;
+}
+
+.stage .map {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.mapLoading {
+  margin: 0;
+  padding: 16px;
+  color: var(--text-2);
+}
+
+.panel {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  left: 8px;
+  z-index: 500;
+  display: grid;
+  grid-template-rows: auto minmax(120px, 1fr);
+  max-height: clamp(220px, 50%, 60%);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--separator);
+  overflow: hidden;
+}
+
+.stage[data-collapsed="true"] .panel {
+  max-height: none;
+  grid-template-rows: auto;
+}
+
+.stage[data-collapsed="true"] .panelBody {
+  display: none;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+}
+
+.toggleHint {
+  color: var(--text-2);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.panelBody {
+  min-height: 0;
+  padding: 4px 16px 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@media (min-width: 768px) {
+  .stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    height: calc(100dvh - 2 * var(--page-block) - 100px);
+    min-height: 520px;
+    overflow: visible;
+    gap: 12px;
+    --zone-map-inset-bottom: 0px;
+  }
+
+  .stage[data-collapsed="true"] {
+    --zone-map-inset-bottom: 0px;
+  }
+
+  .stage .map {
+    position: relative;
+    inset: auto;
+    overflow: hidden;
+  }
+
+  .panel,
+  .stage[data-collapsed="true"] .panel {
+    position: static;
+    max-height: none;
+    grid-template-rows: minmax(0, 1fr);
+    border: 0;
+  }
+
+  .toggle {
+    display: none;
+  }
+
+  .stage[data-collapsed="true"] .panelBody {
+    display: block;
+  }
+
+  .panelBody {
+    padding-top: 16px;
+  }
+}

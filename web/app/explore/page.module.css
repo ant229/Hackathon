@@ -1,0 +1,17 @@
+/* Explore page shell: title, lede, then the ExploreView layout. */
+.page {
+  display: grid;
+  gap: 16px;
+  max-width: 1400px;
+  min-width: 0;
+}
+
+.header {
+  display: grid;
+  gap: 8px;
+  max-width: 40em;
+}
+
+.lede {
+  color: var(--text-2);
+}
