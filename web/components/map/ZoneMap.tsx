@@ -89,15 +89,20 @@ const FAN_PITCH_Y = DIAL_PIN.height + 6;
 const TILE_ERROR_LIMIT = 3;
 
 const TILE_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors ' +
-  '&copy; <a href="https://carto.com/attributions">CARTO</a>';
+  'Tiles &copy; <a href="https://www.esri.com">Esri</a> &mdash; Esri, HERE, Garmin, ' +
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+/** Esri Canvas tiles stop at 16; Leaflet scales them up past that. */
+const TILE_MAX_NATIVE_ZOOM = 16;
 
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
+// Esri's keyless gray canvas. CARTO basemaps now return an "API key required"
+// placeholder tile with a 200, which the tile-error fallback can't detect.
 function tileUrl(dark: boolean): string {
-  const style = dark ? "dark_all" : "light_all";
-  return `https://{s}.basemaps.cartocdn.com/${style}/{z}/{x}/{y}{r}.png`;
+  const style = dark ? "World_Dark_Gray_Base" : "World_Light_Gray_Base";
+  return `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/${style}/MapServer/tile/{z}/{y}/{x}`;
 }
 
 function prefersReducedMotion(): boolean {
@@ -279,7 +284,7 @@ export function ZoneMap({ zones, selectedId, onSelect, onMoveEnd, className }: Z
     // Basemap, following the system appearance, including live changes.
     const darkQuery = window.matchMedia(DARK_QUERY);
     let tiles: L.TileLayer | null = L.tileLayer(tileUrl(darkQuery.matches), {
-      subdomains: "abcd",
+      maxNativeZoom: TILE_MAX_NATIVE_ZOOM,
       maxZoom: 20,
       attribution: TILE_ATTRIBUTION,
     });

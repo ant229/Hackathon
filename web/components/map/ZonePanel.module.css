@@ -117,3 +117,16 @@
 .planLink {
   justify-self: start;
 }
+
+.occupancyBar {
+  margin-top: 4px;
+}
+
+/* All Zones rows: let the text column fill the width so the occupancy bar spans it. */
+.row .rowText {
+  flex: 1 1 auto;
+}
+
+.rowBar {
+  margin-top: 6px;
+}

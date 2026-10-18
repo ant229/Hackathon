@@ -147,3 +147,35 @@
     transition: none;
   }
 }
+
+/* Zone name under the capsule, so each pin is identifiable without a click.
+   Decorative (the accessible name lives in .ss-dial-sr). Capped width with an
+   ellipsis so long names don't overlap neighboring pins; opaque surface so it
+   reads on any basemap. Fixed 12 px (the app minimum) keeps the pin's size. */
+.ss-dial-name {
+  max-width: 120px;
+  margin-top: 1px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 15px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+}
+
+.ss-dial-selected .ss-dial-name {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+@media (prefers-contrast: more) {
+  .ss-dial-name {
+    box-shadow: inset 0 0 0 1px var(--text-2);
+  }
+}

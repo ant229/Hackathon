@@ -53,10 +53,11 @@ export const DIAL_PIN: {
   iconAnchor: [number, number];
 } = {
   className: "ss-dial-icon",
-  width: 76,
-  height: 66,
-  iconSize: [76, 66],
-  iconAnchor: [38, DIAL_SIZES.sm / 2],
+  width: 128,
+  height: 86,
+  iconSize: [128, 86],
+  // Anchor on the ring center: half the width across, one ring-radius down.
+  iconAnchor: [64, DIAL_SIZES.sm / 2],
 };
 
 // ---------------------------------------------------------------------------
@@ -159,6 +160,9 @@ export function renderDialHtml(input: DialPinInput): string {
     ` style="stroke-dashoffset:${reading.dashOffset}"/>` +
     `</svg>` +
     `<span class="ss-dial-capsule" aria-hidden="true">${reading.capsuleText}</span>` +
+    (input.label
+      ? `<span class="ss-dial-name" aria-hidden="true">${escapeHtml(input.label)}</span>`
+      : "") +
     `<span class="ss-dial-sr">${name}</span>` +
     `</div>`
   );
@@ -177,6 +181,8 @@ export function updateDialElement(element: Element, input: DialPinInput): boolea
   const capsule = root.querySelector(".ss-dial-capsule");
   const sr = root.querySelector(".ss-dial-sr");
   if (!arc || !capsule || !sr) return false;
+  const nameEl = root.querySelector(".ss-dial-name");
+  if (nameEl && input.label !== undefined) nameEl.textContent = input.label;
 
   const reading = readDial(input);
   root.setAttribute("data-band", reading.band.band);
